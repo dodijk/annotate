@@ -1,5 +1,5 @@
 /* CSS crunched with Crunch - http://crunchapp.net/ */
 body{padding-top:40px;}
-@media (min-width:768px){.container{max-width:730px;}}.rating{unicode-bidi:bidi-override;direction:rtl;font-size:30px;}.rating span.star{font-family:FontAwesome;font-weight:normal;font-style:normal;display:inline-block;}.rating span.star:hover{cursor:pointer;}
+@media (min-width:768px){.container{max-width:745px;}}.rating{unicode-bidi:bidi-override;direction:rtl;font-size:30px;}.rating span.star{font-family:FontAwesome;font-weight:normal;font-style:normal;display:inline-block;}.rating span.star:hover{cursor:pointer;}
 .rating span.star:before{content:"\f006";padding-right:5px;color:#999999;}
 .rating span.star:hover:before,.rating span.star:hover~span.star:before{content:"\f005";color:#e3cf7a;}
