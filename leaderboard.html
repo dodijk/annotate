@@ -1,0 +1,23 @@
+{% set title = "Leaderboard" %}
+{% extends "template.html" %}
+
+{% block container %}
+<h1>Leaderboard</h1>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>User</th>
+      <th>Number of Ratings</th>
+    </tr>
+  </thead>
+{% for count in counts %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ count[0] }}</td>
+    <td>{{ count[1] }}</td>
+  </tr>
+{% endfor %}
+</table>
+{% endblock %}

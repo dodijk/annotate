@@ -1,10 +1,12 @@
 {% set title = "Annotate" %}
 {% extends "template.html" %}
 {% block container %}
-      <h1>Annotation</h1>
+      <h1>Annotate</h1>
       <p class="lead">Listen to the following piece of audio and rate it.</p>
         
       <div class="row">
+        <form method="post">
+          <input type="hidden" name="content_id" value="{{ content.key.urlsafe() }}" />
           <div class="well col-md-6 col-md-offset-3 text-center">
             <div>{{ content.content }}</div>
                       
@@ -16,5 +18,20 @@
                 <span class="star"></span>
             </div>
           </div>        
+        </form>
       </div>
+      
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+$( document ).ready(function() {
+    $("form .rating span.star").click(function() {
+        var stars = 5-$(this).index();
+        var form = $(this).closest("form");
+        form.append('<input type="hidden" name="stars" value="'+stars+'" />');
+        form.submit();
+    });
+});
+</script>
+
 {% endblock %}

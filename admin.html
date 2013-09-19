@@ -9,6 +9,7 @@
       <th>Author</th>
       <th>Date</th>
       <th>Content</th>
+      <th>Ratings</th>
     </tr>
   </thead>
 {% for content in contents %}
@@ -17,6 +18,7 @@
     <td>{{ content.author }}</td>
     <td>{{ content.date }}</td>
     <td>{{ content.content }}</td>
+    <td>{{ counts[content.key.urlsafe()] }}</td>
   </tr>
 {% endfor %}
 </table>

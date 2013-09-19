@@ -16,6 +16,8 @@
 #
 import os, random
 
+from collections import defaultdict
+
 import jinja2
 import webapp2
 
@@ -36,6 +38,13 @@ class Content(ndb.Model):
     author = ndb.UserProperty()
     content = ndb.StringProperty(indexed=False)
     date = ndb.DateTimeProperty(auto_now_add=True)
+    
+class Rating(ndb.Model):
+    """Models rating for content entries with user, Content, date and rating."""
+    user = ndb.UserProperty()
+    content = ndb.KeyProperty(kind=Content)
+    date = ndb.DateTimeProperty(auto_now_add=True)
+    rating = ndb.IntegerProperty()
 
 class TemplateHandler(webapp2.RequestHandler):
     def is_logged_in(self):
@@ -70,10 +79,31 @@ class AnnotateHandler(TemplateHandler):
         query = Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME))
         values["content"] = query.fetch(offset=random.randint(0, query.count()-1), limit=1)[0]
         self.logged_in_template_response('annotate.html', values)
+        
+    def post(self):
+        user, user_values = self.is_logged_in()
+        if not user:
+            self.redirect(users.create_login_url(self.request.uri))
+            return
+        
+        rating = Rating(user=user, 
+                        rating=int(self.request.get('stars')),
+                        content=ndb.Key(urlsafe=self.request.get('content_id')),
+                        parent=ndb.Key('Rating', ANNOTATION_NAME))
+        rating.put()
+        
+        self.redirect('/annotate')
 
 class LeaderboardHandler(TemplateHandler):
     def get(self):
-        self.logged_in_template_response('leaderboard.html')
+        query = Rating.query(ancestor=ndb.Key('Rating', ANNOTATION_NAME))
+        
+        counts = defaultdict(int)
+        for rating in query.fetch():
+            counts[rating.user] += 1
+
+        values = {"counts": sorted(counts.iteritems(), key=lambda x: x[1], reverse=True)}
+        self.logged_in_template_response('leaderboard.html', values)
 
 class AboutHandler(TemplateHandler):
     def get(self):
@@ -82,9 +112,15 @@ class AboutHandler(TemplateHandler):
 class AdminHandler(TemplateHandler):
     def get(self):
         if not self.current_user_is_admin_or_redirect(): return
+        query = Rating.query(ancestor=ndb.Key('Rating', ANNOTATION_NAME))
+        counts = defaultdict(int)
+        for rating in query.fetch():
+            counts[rating.content.urlsafe()] += 1
+        
         template_values = {
             "contents": Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME)) \
                                   .order(-Content.date).fetch(),
+            "counts": counts,
         }
         
         self.logged_in_template_response('admin.html', template_values)
