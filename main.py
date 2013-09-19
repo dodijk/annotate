@@ -14,31 +14,94 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
+import os, random
 
 import jinja2
 import webapp2
 
+from google.appengine.ext import ndb
 from google.appengine.api import users
+
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'])
-class MainHandler(webapp2.RequestHandler):
-    def get(self):
-        user = users.get_current_user()
-        if not user:
-            self.redirect(users.create_login_url(self.request.uri))
-            return
 
-        template_values = {
+# We set a parent key on to ensure that they are all in the same
+# entity group. Queries across the single entity group will be consistent.
+# However, the write rate should be limited to ~1/second.
+ANNOTATION_NAME = "Fleur-fMRI"
+
+class Content(ndb.Model):
+    """Models an individual content entry with author, content, and date."""
+    author = ndb.UserProperty()
+    content = ndb.StringProperty(indexed=False)
+    date = ndb.DateTimeProperty(auto_now_add=True)
+
+class TemplateHandler(webapp2.RequestHandler):
+    def is_logged_in(self):
+        user = users.get_current_user()
+        if not user: return user, {}
+    
+        return user, {
             "user": user.nickname(),
             "is_admin": users.is_current_user_admin(),
             "logout_url": users.create_logout_url(self.request.uri),
         }
+    
+    def logged_in_template_response(self, template, template_values={}):
+        user, user_values = self.is_logged_in()
+        if not user:
+            self.redirect(users.create_login_url(self.request.uri))
+        else:
+            template_values.update(user_values)
+            template = JINJA_ENVIRONMENT.get_template(template)
+            self.response.write(template.render(template_values))
 
-        template = JINJA_ENVIRONMENT.get_template('template.html')
-        self.response.write(template.render(template_values))
+    def current_user_is_admin_or_redirect(self):
+        user = users.get_current_user()
+        if not user or not users.is_current_user_admin():
+            self.redirect('/')
+        return user
+
+class AnnotateHandler(TemplateHandler):
+    def get(self):
+        values = {}
+        
+        query = Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME))
+        values["content"] = query.fetch(offset=random.randint(0, query.count()-1), limit=1)[0]
+        self.logged_in_template_response('annotate.html', values)
+
+class LeaderboardHandler(TemplateHandler):
+    def get(self):
+        self.logged_in_template_response('leaderboard.html')
+
+class AboutHandler(TemplateHandler):
+    def get(self):
+        self.logged_in_template_response('about.html')
+
+class AdminHandler(TemplateHandler):
+    def get(self):
+        if not self.current_user_is_admin_or_redirect(): return
+        template_values = {
+            "contents": Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME)) \
+                                  .order(-Content.date).fetch(),
+        }
+        
+        self.logged_in_template_response('admin.html', template_values)
+    
+    def post(self):
+        user = self.current_user_is_admin_or_redirect()
+        if not user: return
+        content = Content(author=user, 
+                          content=self.request.get('content'),
+                          parent=ndb.Key('Content', ANNOTATION_NAME))
+        content.put()
+        self.redirect('/admin')
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler)
+    ('/', AnnotateHandler),
+    ('/annotate', AnnotateHandler),
+    ('/leaderboard', LeaderboardHandler),
+    ('/about', AboutHandler),
+    ('/admin', AdminHandler),
 ], debug=True)

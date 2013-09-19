@@ -1,0 +1,29 @@
+{% set title = "Admin" %}
+{% extends "template.html" %}
+
+{% block container %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Author</th>
+      <th>Date</th>
+      <th>Content</th>
+    </tr>
+  </thead>
+{% for content in contents %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ content.author }}</td>
+    <td>{{ content.date }}</td>
+    <td>{{ content.content }}</td>
+  </tr>
+{% endfor %}
+</table>
+
+<form role="form" class="text-right" method="post">
+  <textarea class="form-control" rows="3" name="content"></textarea><br />
+  <button type="submit" class="btn btn-primary">Add</button>
+</form>
+
+{% endblock %}

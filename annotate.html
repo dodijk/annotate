@@ -1,0 +1,20 @@
+{% set title = "Annotate" %}
+{% extends "template.html" %}
+{% block container %}
+      <h1>Annotation</h1>
+      <p class="lead">Listen to the following piece of audio and rate it.</p>
+        
+      <div class="row">
+          <div class="well col-md-6 col-md-offset-3 text-center">
+            <div>{{ content.content }}</div>
+                      
+            <div class="rating">
+                <span class="star"></span>
+                <span class="star"></span>
+                <span class="star"></span>
+                <span class="star"></span>
+                <span class="star"></span>
+            </div>
+          </div>        
+      </div>
+{% endblock %}
