@@ -1,0 +1,31 @@
+body {
+    padding-top: 40px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 730px;
+  }
+}
+
+.rating {
+    unicode-bidi:bidi-override;
+    direction:rtl;
+    font-size:30px;
+    span.star{
+        font-family: FontAwesome;
+        font-weight:normal;
+        font-style:normal;
+        display:inline-block;
+        &:hover{cursor:pointer;}
+        &:before{
+            content:"\f006";
+            padding-right:5px;
+            color:#999999;
+        }
+        &:hover:before,&:hover~span.star:before{
+            content:"\f005";
+            color:#e3cf7a;
+        }
+    }
+}
