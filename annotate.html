@@ -28,6 +28,7 @@ $( document ).ready(function() {
     $("form .rating span.star").click(function() {
         var stars = 5-$(this).index();
         var form = $(this).closest("form");
+        form.find(".rating span.star").fadeOut();
         form.append('<input type="hidden" name="stars" value="'+stars+'" />');
         form.submit();
     });
