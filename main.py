@@ -77,8 +77,12 @@ class AnnotateHandler(TemplateHandler):
         values = {}
         
         query = Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME))
-        values["content"] = query.fetch(offset=random.randint(0, query.count()-1), limit=1)[0]
-        self.logged_in_template_response('annotate.html', values)
+        count = query.count()
+        if count > 0:
+            values["content"] = query.fetch(offset=random.randint(0, count-1), limit=1)[0]
+            self.logged_in_template_response('annotate.html', values)
+        else:
+            self.redirect('/about')
         
     def post(self):
         user, user_values = self.is_logged_in()
