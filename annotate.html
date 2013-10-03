@@ -1,20 +1,29 @@
 {% set title = "Annotate" %}
 {% extends "template.html" %}
+{% macro rating(content, show_content=True) -%}
+<div class="rating unrated">
+  {% if show_content %}{{ content.content }}{% endif %}
+  <input type="hidden" name="content_id" value="{{ content.key.urlsafe() }}" />
+    {% for star in range(NUMBER_OF_STARS) %}
+        <span class="star"></span>
+    {% endfor %}
+</div>
+{%- endmacro %}
 {% block container %}
       <h1>Annotate</h1>
       <p class="lead">Listen to the following piece of audio and rate it.</p>
         
       <div class="row">
         <form method="post">
-          <input type="hidden" name="content_id" value="{{ content.key.urlsafe() }}" />
           <div class="well col-md-6 col-md-offset-3 text-center">
             <div>{{ content.content }}</div>
-                      
-            <div class="rating">
-                {% for star in range(NUMBER_OF_STARS) %}
-                    <span class="star"></span>
-                {% endfor %}
-            </div>
+            
+            {% if not subcontents %}
+                {{ rating(content, show_content=False) }}
+            {% endif %}            
+            {% for subcontent in subcontents %}
+                {{ rating(subcontent) }}
+            {% endfor %}                      
           </div>        
         </form>
       </div>
@@ -26,14 +35,17 @@ $( document ).ready(function() {
     // Handle clicks on stars
     $("form .rating span.star").click(function() {
         var stars = {{ NUMBER_OF_STARS }}-$(this).index();
-        var form = $(this).closest("form");
-        rate(form, stars);
+        var rating = $(this).closest(".rating");
+        rate(rating, stars);
     });
     
-    function rate(form, stars) {
-        form.find(".rating span.star").fadeOut();
+    function rate(rating, stars) {
+        rating.removeClass("unrated");
+        rating.fadeOut();
+        var form = rating.closest("form");
         form.append('<input type="hidden" name="stars" value="'+stars+'" />');
-        form.submit();
+        if(form.find(".unrated").length == 0)
+            form.submit();
     }
     
     // Handle keypresses
@@ -41,7 +53,7 @@ $( document ).ready(function() {
         if(event.charCode < 49) return;
         if(event.charCode > 48+{{ NUMBER_OF_STARS }}) return;
         var stars = event.charCode-48;
-        rate($("form:has(.rating):first-child"), stars);
+        rate($("form .unrated:first"), stars);
     });
 });
 </script>

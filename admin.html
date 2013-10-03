@@ -20,10 +20,29 @@
     <td>{{ content.content }}</td>
     <td>{{ counts[content.key.urlsafe()] }}</td>
   </tr>
+  {% set outer = loop.index %}
+  {% for subcontent in subcontents[content.key.urlsafe()] %}
+  <tr>
+    <td>{{ outer }}.{{ loop.index }}</td>
+    <td>{{ subcontent.author }}</td>
+    <td>{{ subcontent.date }}</td>
+    <td>{{ subcontent.content }}</td>
+    <td>{{ counts[subcontent.key.urlsafe()] }}</td>
+  </tr>  
+  {% endfor %}  
 {% endfor %}
 </table>
 
 <form role="form" class="text-right" method="post">
+  <select class="form-control" name="parent">
+    <option value="">No parent</option>
+    {% for content in contents %}
+        <option value="{{ content.key.urlsafe() }}">
+            {{ loop.index }}. {{ content.date }}
+            {{ content.content }}
+        </option>
+    {% endfor %}
+  </select>
   <textarea class="form-control" rows="3" name="content"></textarea><br />
   <button type="submit" class="btn btn-primary">Add</button>
 </form>

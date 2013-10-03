@@ -14,7 +14,17 @@ indexes:
   ancestor: yes
   properties:
   - name: date
+
+- kind: Content
+  ancestor: yes
+  properties:
+  - name: date
     direction: desc
+
+- kind: Rating
+  ancestor: yes
+  properties:
+  - name: content
 
 - kind: Rating
   ancestor: yes
