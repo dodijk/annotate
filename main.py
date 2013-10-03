@@ -63,7 +63,10 @@ class TemplateHandler(webapp2.RequestHandler):
             self.redirect(users.create_login_url(self.request.uri))
         else:
             template_values.update(user_values)
-            template = JINJA_ENVIRONMENT.get_template(template)
+            try:
+                template = JINJA_ENVIRONMENT.get_template(template)
+            except:
+                self.abort(404)
             self.response.write(template.render(template_values))
 
     def current_user_is_admin_or_redirect(self):
@@ -71,6 +74,10 @@ class TemplateHandler(webapp2.RequestHandler):
         if not user or not users.is_current_user_admin():
             self.redirect('/')
         return user
+        
+    def get(self, template):
+        self.logged_in_template_response(template + '.html')
+
 
 class AnnotateHandler(TemplateHandler):
     def get(self):
@@ -109,10 +116,6 @@ class LeaderboardHandler(TemplateHandler):
         values = {"counts": sorted(counts.iteritems(), key=lambda x: x[1], reverse=True)}
         self.logged_in_template_response('leaderboard.html', values)
 
-class AboutHandler(TemplateHandler):
-    def get(self):
-        self.logged_in_template_response('about.html')
-
 class AdminHandler(TemplateHandler):
     def get(self):
         if not self.current_user_is_admin_or_redirect(): return
@@ -142,6 +145,9 @@ app = webapp2.WSGIApplication([
     ('/', AnnotateHandler),
     ('/annotate', AnnotateHandler),
     ('/leaderboard', LeaderboardHandler),
-    ('/about', AboutHandler),
     ('/admin', AdminHandler),
+    # Will match /anything if there is an anything.html 
+    # (also /anything/ and /anything.html) and will show
+    # the corresponding template anything.html
+    (r'^/(.*?)(?:\.html)?/?$', TemplateHandler), 
 ], debug=True)
