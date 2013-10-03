@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import os, random
+
+import os
 
 from collections import defaultdict
 
@@ -18,6 +19,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 # However, the write rate should be limited to ~1/second.
 
 from models import Content, Rating
+from sampling import ContentSampler
 
 class TemplateHandler(webapp2.RequestHandler):
     def is_logged_in(self):
@@ -54,16 +56,14 @@ class TemplateHandler(webapp2.RequestHandler):
 
 class AnnotateHandler(TemplateHandler):
     def get(self):
-        values = {}
-        
-        query = Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME))
-        count = query.count()
-        if count > 0:
-            values["NUMBER_OF_STARS"] = NUMBER_OF_STARS
-            values["content"] = query.fetch(offset=random.randint(0, count-1), limit=1)[0]
+        values = {
+            "NUMBER_OF_STARS": NUMBER_OF_STARS,
+            "content": CONTENT_SAMPLER(),
+        }
+        if values["content"]:
             self.logged_in_template_response('annotate.html', values)
         else:
-            self.redirect('/about')
+            self.redirect('/done')
         
     def post(self):
         user, user_values = self.is_logged_in()
@@ -119,6 +119,7 @@ class AdminHandler(TemplateHandler):
 
 ANNOTATION_NAME = "Fleur-fMRI"
 NUMBER_OF_STARS = 5
+CONTENT_SAMPLER = ContentSampler(ANNOTATION_NAME, unrated=True)
 
 #
 
