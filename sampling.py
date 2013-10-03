@@ -12,14 +12,18 @@ class ContentSampler():
         self.ancestor = ancestor
         self.unrated = unrated
         
-    def __call__(self):
+    def __call__(self, user=None):
         (query, count) = query_content(self.ancestor)
         choices = range(count)
         while count > 0 and len(choices):
             choice = random.choice(choices)
             content = query.fetch(offset=choice, limit=1)[0]
+            filters = Rating.content == content.key
+            if user:
+                filters = ndb.AND(Rating.user == user, filters)
+                
             if self.unrated and \
-                Rating.query(Rating.content == content.key, \
+                Rating.query(filters, \
                              ancestor=ndb.Key('Rating', self.ancestor)).count():
                 choices.remove(choice)
             else:
@@ -33,7 +37,7 @@ class SubContentSampler(ContentSampler):
         self.unrated = unrated
         self.sample_subcontent = sample_subcontent
         
-    def __call__(self):
+    def __call__(self, user=None):
         query = Content.query(ancestor=ndb.Key('Content', self.ancestor))
         count = query.count()
         choices = range(count)
@@ -47,13 +51,13 @@ class SubContentSampler(ContentSampler):
 
             if self.unrated:
                 if len(subcontent_keys) == 0:
-                    ratings = Rating.query(Rating.content == content.key, \
-                                  ancestor=ndb.Key('Rating', self.ancestor)).count()
+                    filters = Rating.content == content.key
                 else:
-                    ratings = Rating.query(Rating.content.IN(subcontent_keys), \
-                                  ancestor=ndb.Key('Rating', self.ancestor)).count()
-
-                print len(subcontent_keys), ratings
+                    filters = Rating.content.IN(subcontent_keys)
+                if user:
+                    filters = ndb.AND(Rating.user == user, filters)
+                ratings = Rating.query(filters, \
+                              ancestor=ndb.Key('Rating', self.ancestor)).count()
 
                 invalid  = self.sample_subcontent and ratings > 0
                 invalid |= len(subcontent_keys) == 0 and ratings == 1

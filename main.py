@@ -80,12 +80,20 @@ class AnnotateHandler(TemplateHandler):
         return True
 
     def get(self):
+        user, user_values = self.is_logged_in()
+        if not user:
+            return self.redirect(users.create_login_url(self.request.uri))
+
         if not self.check_agreements(): return
                   
         values = {
             "NUMBER_OF_STARS": NUMBER_OF_STARS,
-            "content": CONTENT_SAMPLER(),
         }
+        if USER_BASED_CONTENT_SAMPLING:
+            values["content"] = CONTENT_SAMPLER(user)
+        else:
+            values["content"] = CONTENT_SAMPLER()
+            
         if values["content"]:
             if RENDER_SUBCONTENT:
                 query = SubContent.query(ancestor=values["content"].key)
@@ -162,6 +170,7 @@ ANNOTATION_NAME = "Fleur-fMRI"
 NUMBER_OF_STARS = 5
 CONTENT_SAMPLER = SubContentSampler(ANNOTATION_NAME, unrated=True, \
                                     sample_subcontent=True)
+USER_BASED_CONTENT_SAMPLING = True
 ANNOTATION_OBLIGATORY_AGREEMENTS = ['/instruction']
 RENDER_SUBCONTENT = not CONTENT_SAMPLER.sample_subcontent
 
