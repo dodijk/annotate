@@ -16,8 +16,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 # We set a parent key on to ensure that they are all in the same
 # entity group. Queries across the single entity group will be consistent.
 # However, the write rate should be limited to ~1/second.
-ANNOTATION_NAME = "Fleur-fMRI"
-NUMBER_OF_STARS = 5
 
 from models import Content, Rating
 
@@ -80,7 +78,7 @@ class AnnotateHandler(TemplateHandler):
         rating.put()
         
         self.redirect('/annotate')
-
+        
 class LeaderboardHandler(TemplateHandler):
     def get(self):
         query = Rating.query(ancestor=ndb.Key('Rating', ANNOTATION_NAME))
@@ -116,6 +114,13 @@ class AdminHandler(TemplateHandler):
                           parent=ndb.Key('Content', ANNOTATION_NAME))
         content.put()
         self.redirect('/admin')
+
+#
+
+ANNOTATION_NAME = "Fleur-fMRI"
+NUMBER_OF_STARS = 5
+
+#
 
 app = webapp2.WSGIApplication([
     ('/', AnnotateHandler),
