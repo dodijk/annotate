@@ -32,6 +32,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 # entity group. Queries across the single entity group will be consistent.
 # However, the write rate should be limited to ~1/second.
 ANNOTATION_NAME = "Fleur-fMRI"
+NUMBER_OF_STARS = 5
 
 class Content(ndb.Model):
     """Models an individual content entry with author, content, and date."""
@@ -86,6 +87,7 @@ class AnnotateHandler(TemplateHandler):
         query = Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME))
         count = query.count()
         if count > 0:
+            values["NUMBER_OF_STARS"] = NUMBER_OF_STARS
             values["content"] = query.fetch(offset=random.randint(0, count-1), limit=1)[0]
             self.logged_in_template_response('annotate.html', values)
         else:

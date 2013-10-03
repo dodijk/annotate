@@ -11,11 +11,9 @@
             <div>{{ content.content }}</div>
                       
             <div class="rating">
-                <span class="star"></span>
-                <span class="star"></span>
-                <span class="star"></span>
-                <span class="star"></span>
-                <span class="star"></span>
+                {% for star in range(NUMBER_OF_STARS) %}
+                    <span class="star"></span>
+                {% endfor %}
             </div>
           </div>        
         </form>
@@ -26,7 +24,6 @@
 <script type="text/javascript">
 $( document ).ready(function() {
     $("form .rating span.star").click(function() {
-        var stars = 5-$(this).index();
         var form = $(this).closest("form");
         form.find(".rating span.star").fadeOut();
         form.append('<input type="hidden" name="stars" value="'+stars+'" />');
