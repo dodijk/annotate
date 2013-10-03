@@ -23,11 +23,25 @@
 {% block script %}
 <script type="text/javascript">
 $( document ).ready(function() {
+    // Handle clicks on stars
     $("form .rating span.star").click(function() {
+        var stars = {{ NUMBER_OF_STARS }}-$(this).index();
         var form = $(this).closest("form");
+        rate(form, stars);
+    });
+    
+    function rate(form, stars) {
         form.find(".rating span.star").fadeOut();
         form.append('<input type="hidden" name="stars" value="'+stars+'" />');
         form.submit();
+    }
+    
+    // Handle keypresses
+    $(document).keypress(function(event) {
+        if(event.charCode < 49) return;
+        if(event.charCode > 48+{{ NUMBER_OF_STARS }}) return;
+        var stars = event.charCode-48;
+        rate($("form:has(.rating):first-child"), stars);
     });
 });
 </script>
