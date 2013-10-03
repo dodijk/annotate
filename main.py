@@ -8,7 +8,7 @@ import jinja2
 import webapp2
 
 from google.appengine.ext import ndb
-from google.appengine.api import users
+from google.appengine.api import users, memcache
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -18,7 +18,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 # entity group. Queries across the single entity group will be consistent.
 # However, the write rate should be limited to ~1/second.
 
-from models import Content, Rating
+from models import Content, Rating, Agreement
 from sampling import ContentSampler
 
 class TemplateHandler(webapp2.RequestHandler):
@@ -55,7 +55,33 @@ class TemplateHandler(webapp2.RequestHandler):
 
 
 class AnnotateHandler(TemplateHandler):
+    def check_agreements(self):
+        user, user_values = self.is_logged_in()
+        if not user:
+            self.redirect(users.create_login_url(self.request.uri))
+            return False
+            
+        agreed = memcache.get("agreed:" + user.user_id())
+        if agreed and agreed >= set(ANNOTATION_OBLIGATORY_AGREEMENTS):
+            return True
+
+        agree = self.request.get('agree', None)
+        if agree:
+            Agreement(user=user, url=agree,
+                      parent=ndb.Key('Agreement', ANNOTATION_NAME)).put()
+        for agreement in ANNOTATION_OBLIGATORY_AGREEMENTS:
+            if not Agreement.query(Agreement.user==user and \
+                                   Agreement.url == agreement, 
+                        ancestor=ndb.Key('Agreement', ANNOTATION_NAME)).count():
+                self.redirect(agreement)
+                return False
+        
+        memcache.add("agreed:" + user.user_id(), set(ANNOTATION_OBLIGATORY_AGREEMENTS))
+        return True
+
     def get(self):
+        if not self.check_agreements(): return
+                  
         values = {
             "NUMBER_OF_STARS": NUMBER_OF_STARS,
             "content": CONTENT_SAMPLER(),
@@ -68,8 +94,7 @@ class AnnotateHandler(TemplateHandler):
     def post(self):
         user, user_values = self.is_logged_in()
         if not user:
-            self.redirect(users.create_login_url(self.request.uri))
-            return
+            return self.redirect(users.create_login_url(self.request.uri))
         
         rating = Rating(user=user, 
                         rating=int(self.request.get('stars')),
@@ -120,6 +145,7 @@ class AdminHandler(TemplateHandler):
 ANNOTATION_NAME = "Fleur-fMRI"
 NUMBER_OF_STARS = 5
 CONTENT_SAMPLER = ContentSampler(ANNOTATION_NAME, unrated=True)
+ANNOTATION_OBLIGATORY_AGREEMENTS = ['/instruction']
 
 #
 

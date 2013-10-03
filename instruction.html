@@ -1,0 +1,24 @@
+{% set title = "Annotate" %}
+{% extends "template.html" %}
+{% block container %}
+
+<h1>Instruction</h1>
+
+<div class="alert alert-info">Please read the instructions carefully before proceeding to the experiment.</div>
+
+<ol>
+<li>During the experiment, on each trial you will hear a very short rhythm. Listen carefully to each rhythm and try to focus on hearing the beat. Try not to move along with the rhythm while doing this.</li>
+<li>For each rhythm, we ask you to give a rating from 1-10 of how easy you would think it would be to tap along with the beat in that rhythm. You can give your rating by clicking on the stars. Note: we ask you how easy you think it would be to tap along based on just listening to the rhythm! We do not want you to tap along!</li>
+<li>Before you start, on the next screen, we will give you some examples of rhythms that could be considered to contain a very clear beat or no beat at all. Listen carefully to these rhythms. Note: you can listen to the examples as often as you would like. However, once the actual experiment starts, you will only hear every rhythm once!</li>
+<li>Please use the examples to check whether the sound on your computer is working properly. We ask you to do this experiment in a quiet environment or using headphones, so you will be able to hear the rhythms properly.</li>
+<li>In total, the experiment will take around 45 minutes to complete. Every few minutes a break is inserted. You can make these breaks as long or short as you like. We would very much appreciate it if you could finish the entire experiment! Thank you very much for participating.</li>
+</ol>
+
+<div class="text-center">
+    <a href="/annotate?agree=/instruction" class="btn btn-lg btn-success">
+        Continue to examples 
+        <i class="icon-arrow-right"></i>
+    </a>
+</div>
+
+{% endblock %}

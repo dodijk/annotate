@@ -12,3 +12,9 @@ class Rating(ndb.Model):
     content = ndb.KeyProperty(kind=Content)
     date = ndb.DateTimeProperty(auto_now_add=True)
     rating = ndb.IntegerProperty()
+    
+class Agreement(ndb.Model):
+    """Models an agreement of a user, url, and date."""
+    user = ndb.UserProperty()
+    url = ndb.StringProperty()
+    date = ndb.DateTimeProperty(auto_now_add=True)
