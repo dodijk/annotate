@@ -40,7 +40,7 @@ class TemplateHandler(webapp2.RequestHandler):
             template_values.update(user_values)
             try:
                 template = JINJA_ENVIRONMENT.get_template(template)
-            except:
+            except jinja2.exceptions.TemplateNotFound:
                 self.abort(404)
             self.response.write(template.render(template_values))
 
