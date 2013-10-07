@@ -171,7 +171,7 @@ NUMBER_OF_STARS = 5
 CONTENT_SAMPLER = SubContentSampler(ANNOTATION_NAME, unrated=True, \
                                     sample_subcontent=True)
 USER_BASED_CONTENT_SAMPLING = True
-ANNOTATION_OBLIGATORY_AGREEMENTS = ['/instruction']
+ANNOTATION_OBLIGATORY_AGREEMENTS = ['/introduction', '/instruction', '/examples', '/start']
 RENDER_SUBCONTENT = not CONTENT_SAMPLER.sample_subcontent
 
 #

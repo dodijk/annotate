@@ -1,0 +1,159 @@
+{% set title = "Annotate" %}
+{% extends "template.html" %}
+
+{% macro rating(stars, total) -%}
+<div style="font-size: 24pt;">
+    {% for star in range(stars) %}
+        <span class="icon-star" style="color: #e3cf7a;"></span>
+    {% endfor %}
+    {% for star in range(total-stars) %}
+        <span class="icon-star-empty" style="color:#999999;"></span>
+    {% endfor %}
+</div><br />
+{%- endmacro %}
+
+{% block container %}
+<h1>Examples</h1>
+
+<p>Listen carefully to the following examples. You can listen to them as often as you like by using the play button in the audio player. Note that during the experiment, rhythms will play but no audio player will be visible. You will hear each rhythm only once!</p>
+
+<h4>Four examples of rhythms sounding like it would be easy to tap along to the beat</h4>
+
+<audio controls>
+  <source src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-145_no-1.mp3" type="audio/mpeg">
+  <!-- Fall back on Quicktime ActiveX -->
+  <object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="16" width="250">
+    <param name="SRC" value="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-145_no-1.mp3">
+    <param name="AUTOPLAY" value="false">
+    <param name="CONTROLLER" value="true">
+    <param name="KIOSKMODE" value="true">
+    <!-- Fall back on Quicktime -->
+    <embed src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-145_no-1.mp3" pluginspage="http://www.apple.com/quicktime/download/" kioskmode="true" type="audio/mp3" controller="true" loop="false" autoplay="true" height="16" width="250" title="Deze plugin verbergen" />
+  </object>
+</audio>
+
+<p>This is the first example of a rhythm containing a clear beat, which sounds easy to tap along to. We would expect that people will give this rhythm 10 stars.</p>
+{{ rating(10, 10) }}
+
+<audio controls>
+  <source src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-155_no-15.mp3" type="audio/mpeg">
+  <!-- Fall back on Quicktime ActiveX -->
+  <object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="16" width="250">
+    <param name="SRC" value="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-155_no-15.mp3">
+    <param name="AUTOPLAY" value="false">
+    <param name="CONTROLLER" value="true">
+    <param name="KIOSKMODE" value="true">
+    <!-- Fall back on Quicktime -->
+    <embed src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-155_no-15.mp3" pluginspage="http://www.apple.com/quicktime/download/" kioskmode="true" type="audio/mp3" controller="true" loop="false" autoplay="true" height="16" width="250" title="Deze plugin verbergen" />
+  </object>
+</audio>
+
+<p>This is the second example of a rhythm containing a clear beat, which sounds easy to tap along to. We would expect that people will give this rhythm 10 stars.</p>
+{{ rating(10, 10) }}
+
+<audio controls>
+  <source src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-160_no-4.mp3" type="audio/mpeg">
+  <!-- Fall back on Quicktime ActiveX -->
+  <object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="16" width="250">
+    <param name="SRC" value="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-160_no-4.mp3">
+    <param name="AUTOPLAY" value="false">
+    <param name="CONTROLLER" value="true">
+    <param name="KIOSKMODE" value="true">
+    <!-- Fall back on Quicktime -->
+    <embed src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-160_no-4.mp3" pluginspage="http://www.apple.com/quicktime/download/" kioskmode="true" type="audio/mp3" controller="true" loop="false" autoplay="true" height="16" width="250" title="Deze plugin verbergen" />
+  </object>
+</audio>
+
+<p>This is the third example of a rhythm containing a clear beat, which sounds easy to tap along to. We would expect that people will give this rhythm 10 stars.</p>
+{{ rating(10, 10) }}
+
+<audio controls>
+  <source src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-140_no-17.mp3" type="audio/mpeg">
+  <!-- Fall back on Quicktime ActiveX -->
+  <object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="16" width="250">
+    <param name="SRC" value="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-140_no-17.mp3">
+    <param name="AUTOPLAY" value="false">
+    <param name="CONTROLLER" value="true">
+    <param name="KIOSKMODE" value="true">
+    <!-- Fall back on Quicktime -->
+    <embed src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-140_no-17.mp3" pluginspage="http://www.apple.com/quicktime/download/" kioskmode="true" type="audio/mp3" controller="true" loop="false" autoplay="true" height="16" width="250" title="Deze plugin verbergen" />
+  </object>
+</audio>
+
+<p>This is the fourth example of a rhythm containing a clear beat, which sounds easy to tap along to. We would expect that people will give this rhythm 10 stars.</p>
+{{ rating(10, 10) }}
+
+<h4>Four examples of rhythms sounding like it would be hard to tap along to the beat</h4>
+
+<audio controls>
+  <source src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-140_no-10.mp3" type="audio/mpeg">
+  <!-- Fall back on Quicktime ActiveX -->
+  <object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="16" width="250">
+    <param name="SRC" value="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-140_no-10.mp3">
+    <param name="AUTOPLAY" value="false">
+    <param name="CONTROLLER" value="true">
+    <param name="KIOSKMODE" value="true">
+    <!-- Fall back on Quicktime -->
+    <embed src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-140_no-10.mp3" pluginspage="http://www.apple.com/quicktime/download/" kioskmode="true" type="audio/mp3" controller="true" loop="false" autoplay="true" height="16" width="250" title="Deze plugin verbergen" />
+  </object>
+</audio>
+
+<p>This is the first example of a rhythm NOT containing a clear beat, which sounds hard to tap along to. We would expect that people will give this rhythm 1 star.</p>
+{{ rating(1, 10) }}
+
+<audio controls>
+  <source src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-150_no-19.mp3" type="audio/mpeg">
+  <!-- Fall back on Quicktime ActiveX -->
+  <object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="16" width="250">
+    <param name="SRC" value="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-150_no-19.mp3">
+    <param name="AUTOPLAY" value="false">
+    <param name="CONTROLLER" value="true">
+    <param name="KIOSKMODE" value="true">
+    <!-- Fall back on Quicktime -->
+    <embed src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-150_no-19.mp3" pluginspage="http://www.apple.com/quicktime/download/" kioskmode="true" type="audio/mp3" controller="true" loop="false" autoplay="true" height="16" width="250" title="Deze plugin verbergen" />
+  </object>
+</audio>
+
+<p>This is the second example of a rhythm NOT containing a clear beat, which sounds hard to tap along to. We would expect that people will give this rhythm 1 star.</p>
+{{ rating(1, 10) }}
+
+<audio controls>
+  <source src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-150_no-8.mp3" type="audio/mpeg">
+  <!-- Fall back on Quicktime ActiveX -->
+  <object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="16" width="250">
+    <param name="SRC" value="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-150_no-8.mp3">
+    <param name="AUTOPLAY" value="false">
+    <param name="CONTROLLER" value="true">
+    <param name="KIOSKMODE" value="true">
+    <!-- Fall back on Quicktime -->
+    <embed src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-150_no-8.mp3" pluginspage="http://www.apple.com/quicktime/download/" kioskmode="true" type="audio/mp3" controller="true" loop="false" autoplay="true" height="16" width="250" title="Deze plugin verbergen" />
+  </object>
+</audio>
+
+<p>This is the third example of a rhythm NOT containing a clear beat, which sounds hard to tap along to. We would expect that people will give this rhythm 1 star.</p>
+{{ rating(1, 10) }}
+
+<audio controls>
+  <source src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-160_no-20.mp3" type="audio/mpeg">
+  <!-- Fall back on Quicktime ActiveX -->
+  <object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="16" width="250">
+    <param name="SRC" value="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-160_no-20.mp3">
+    <param name="AUTOPLAY" value="false">
+    <param name="CONTROLLER" value="true">
+    <param name="KIOSKMODE" value="true">
+    <!-- Fall back on Quicktime -->
+    <embed src="https://sites.google.com/site/stimuliuploadmcg/stimuli/anchor_IOI-160_no-20.mp3" pluginspage="http://www.apple.com/quicktime/download/" kioskmode="true" type="audio/mp3" controller="true" loop="false" autoplay="true" height="16" width="250" title="Deze plugin verbergen" />
+  </object>
+</audio>
+
+<p>This is the fourth example of a rhythm NOT containing a clear beat, which sounds hard to tap along to. We would expect that people will give this rhythm 1 star.</p>
+{{ rating(1, 10) }}
+
+<div class="text-center">
+    <a href="/annotate?agree=/examples" class="btn btn-lg btn-success">
+        Continue to experiment 
+        <i class="icon-arrow-right"></i>
+    </a>
+</div>
+
+{% endblock %}
