@@ -6,6 +6,7 @@ from collections import defaultdict
 
 import jinja2
 import webapp2
+import yaml
 
 from google.appengine.ext import ndb
 from google.appengine.api import users, memcache
@@ -149,19 +150,53 @@ class AdminHandler(TemplateHandler):
         }
         
         self.logged_in_template_response('admin.html', template_values)
+
+    def add_content(self, author, content, parent=None):
+        if type(content) != str: content = str(content)
+        if parent:
+            content = SubContent(author=author, content=content,
+                                 parent=ndb.Key(urlsafe=parent))
+        else:
+            content = Content(author=author, content=content,
+                             parent=ndb.Key('Content', ANNOTATION_NAME))
+        return content.put()
     
     def post(self):
         user = self.current_user_is_admin_or_redirect()
         if not user: return
-        if self.request.get('parent') != "":
-            content = SubContent(author=user, 
-                                 content=self.request.get('content'),
-                                 parent=ndb.Key(urlsafe=self.request.get('parent')))
+        if self.request.get('isYAML') == 'on':
+            data = yaml.load(self.request.get('content'))
+            if not data: raise ValueError("No YAML data")
+            if "content" not in data:
+                raise ValueError("No content in YAML data")
+
+            if "template" in data:
+                data["template"] = \
+                    JINJA_ENVIRONMENT.from_string(data['template'])
+            if "subtemplate" in data:
+                data["subtemplate"] = \
+                    JINJA_ENVIRONMENT.from_string(data['subtemplate'])
+
+            if type(data["content"]) == dict:
+                for content, subcontents in data["content"].iteritems():
+                    if "template" in data: content = data["template"].render(content)
+                    key = self.add_content(user, content)
+                    for subcontent in subcontents:
+                        if "subtemplate" in data: 
+                            subcontent = data["subtemplate"].render(subcontent)
+                        self.add_content(user, subcontent, key.urlsafe())
+            elif type(data["content"]) == list:
+                for content in data["content"].iteritems():
+                    if "template" in data: content = data["template"].render(content)                
+                    self.add_content(user, content)
+            else:
+                raise ValueError("Unknown type of content")
+
+        elif self.request.get('parent') != "":
+            self.add_content(user, self.request.get('content'), \
+                                   self.request.get('parent'))
         else:
-            content = Content(author=user, 
-                             content=self.request.get('content'),
-                             parent=ndb.Key('Content', ANNOTATION_NAME))
-        content.put()
+            self.add_content(user, self.request.get('content'))
         self.redirect('/admin')
 
 #
