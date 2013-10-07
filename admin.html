@@ -17,7 +17,7 @@
     <td>{{ loop.index }}</td>
     <td>{{ content.author }}</td>
     <td>{{ content.date }}</td>
-    <td>{{ content.content }}</td>
+    <td><div style="max-height: 75px; overflow-y: auto;">{{ content.content|e }}</div></td>
     <td>{{ counts[content.key.urlsafe()] }}</td>
   </tr>
   {% set outer = loop.index %}
@@ -26,7 +26,7 @@
     <td>{{ outer }}.{{ loop.index }}</td>
     <td>{{ subcontent.author }}</td>
     <td>{{ subcontent.date }}</td>
-    <td>{{ subcontent.content }}</td>
+    <td><div style="max-height: 75px; overflow-y: auto;">{{ subcontent.content|e }}</div></td>
     <td>{{ counts[subcontent.key.urlsafe()] }}</td>
   </tr>  
   {% endfor %}  
