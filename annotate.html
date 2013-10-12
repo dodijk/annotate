@@ -50,8 +50,11 @@ $( document ).ready(function() {
     
     // Handle keypresses
     $(document).keypress(function(event) {
+		if(event.charCode == 48 && {{ NUMBER_OF_STARS }} > 9) {
+			return rate($("form .unrated:first"), 10);
+		}
         if(event.charCode < 49) return;
-        if(event.charCode > 48+{{ NUMBER_OF_STARS }}) return;
+        if(event.charCode > 48+Math.max(9,{{ NUMBER_OF_STARS }})) return;
         var stars = event.charCode-48;
         rate($("form .unrated:first"), stars);
     });
