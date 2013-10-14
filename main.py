@@ -79,6 +79,18 @@ class AnnotateHandler(TemplateHandler):
         
         memcache.add("agreed:" + user.user_id(), set(ANNOTATION_OBLIGATORY_AGREEMENTS))
         return True
+        
+    def get_statistics(self, user):
+        annotation_streak = memcache.get("annotation_streak:" + user.user_id())
+        if not annotation_streak: annotation_streak = 0
+        if annotation_streak == 0 or annotation_streak >= ANNOTATION_BREAK_AFTER:
+            memcache.set("annotation_streak:" + user.user_id(), 0, \
+                         ANNOTATION_BREAK_TIMEOUT)
+            if annotation_streak >= ANNOTATION_BREAK_AFTER:
+                self.redirect("/break")
+                return None
+        memcache.incr("annotation_streak:" + user.user_id())        
+        return annotation_streak
 
     def get(self):
         user, user_values = self.is_logged_in()
@@ -86,9 +98,13 @@ class AnnotateHandler(TemplateHandler):
             return self.redirect(users.create_login_url(self.request.uri))
 
         if not self.check_agreements(): return
-                  
+        annotation_streak = self.get_statistics(user)
+        if annotation_streak == None: return
+                
         values = {
             "NUMBER_OF_STARS": NUMBER_OF_STARS,
+            "ANNOTATION_BREAK_AFTER": ANNOTATION_BREAK_AFTER,
+            "annotation_streak": annotation_streak,
         }
         if USER_BASED_CONTENT_SAMPLING:
             values["content"] = CONTENT_SAMPLER(user)
@@ -197,6 +213,8 @@ class AdminHandler(TemplateHandler):
                                    self.request.get('parent'))
         else:
             self.add_content(user, self.request.get('content'))
+
+        memcache.flush_all()
         self.redirect('/admin')
 
 #
@@ -208,7 +226,8 @@ CONTENT_SAMPLER = SubContentSampler(ANNOTATION_NAME, unrated=True, \
 USER_BASED_CONTENT_SAMPLING = True
 ANNOTATION_OBLIGATORY_AGREEMENTS = ['/introduction', '/instruction', '/examples', '/start']
 RENDER_SUBCONTENT = not CONTENT_SAMPLER.sample_subcontent
-
+ANNOTATION_BREAK_AFTER = 5 # Number of annotations after which to force a break
+ANNOTATION_BREAK_TIMEOUT = 300 # Number of seconds to remember a users streak
 #
 
 app = webapp2.WSGIApplication([

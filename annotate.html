@@ -10,6 +10,13 @@
 </div>
 {%- endmacro %}
 {% block container %}
+      <div class="annotation_progress progress progress-striped" style="float: right">
+        <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="{{ annotation_streak }}" aria-valuemin="0" aria-valuemax="{{ ANNOTATION_BREAK_AFTER }}" style="width: {{ 100*annotation_streak/ANNOTATION_BREAK_AFTER }}%">
+          <span class="sr-only"></span>
+        </div>
+        <a href="/break">break</a>
+      </div>
+
       <h1>Annotate</h1>
       <p class="lead">Listen to the following piece of audio and rate it.</p>
         
