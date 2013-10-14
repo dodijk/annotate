@@ -21,3 +21,13 @@ class Agreement(ndb.Model):
     user = ndb.UserProperty()
     url = ndb.StringProperty()
     date = ndb.DateTimeProperty(auto_now_add=True)
+
+class UserDetails(ndb.Model):
+    """Models details for an individual user."""
+    user = ndb.UserProperty()
+    created = ndb.DateTimeProperty(auto_now_add=True)
+    age = ndb.IntegerProperty()
+    years_of_training = ndb.IntegerProperty()
+    recruited_through_sona = ndb.BooleanProperty()
+    sona_number = ndb.IntegerProperty()
+

@@ -1,0 +1,97 @@
+{% set title = "Annotate" %}
+{% extends "template.html" %}
+{% block container %}
+
+<h1>Instructions</h1>
+
+<div class="alert alert-info">Please answer the following questions before we continue.</div>
+
+<form role="form" action="/form/" method="post">
+  <div class="form-group">
+    <label class="control-label" for="AgeInYears">How old are you?</label>
+    <input type="number" class="form-control" name="AgeInYears" id="AgeInYears" placeholder="Age on years">
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="NYearsTraining">How many years of formal musical training have you had in your life?</label>
+    <input type="number" class="form-control" name="NYearsTraining" id="NYearsTraining" placeholder="Number of years of musical training followed">
+  </div>
+  <div class="form-group">
+    <div class="radio">
+      <label class="control-label" >
+        <input type="radio" name="recruitedThroughSona" id="SONA_NO" value="False">
+        I am NOT a Western University Student recruited through SONA
+      </label>
+    </div>
+    <div class="radio">
+      <label class="control-label" >
+        <input type="radio" name="recruitedThroughSona" id="SONA_YES" value="True">
+        I am a Western University Student recruited through SONA
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <input type="text" class="form-control" placeholder="SONA number" name="SonaNumber" id="SonaNumber">
+  </div>
+  <br><br>
+</form>
+
+<div class="text-center">
+    <button onClick="submit()" class="btn btn-lg btn-success">
+        Continue to instructions 
+        <i class="icon-arrow-right"></i>
+    </button>
+</div>
+
+<br><br>
+{% endblock %}
+
+{% block script %}
+<script>
+function validateNumber(input, min, max) {
+    var number = NaN;
+    try {
+        number = parseInt(input.val());
+        if(number == NaN) throw "NaN";
+        if((min !== undefined) && !(number >= min)) throw "too low";
+        if((max !== undefined) && !(number <= max)) throw "too high";
+        input.closest(".form-group").addClass('has-success');
+        input.closest(".form-group").removeClass('has-error');
+    } catch(e) {
+        input.closest(".form-group").removeClass('has-success');
+        input.closest(".form-group").addClass('has-error');
+    }
+    return number;
+}
+
+function validate() {
+    var age = validateNumber($('#AgeInYears'), 0, 125);
+    validateNumber($('#NYearsTraining'), 0, age ? age : 125);
+    
+    var input = $("input:radio[name=recruitedThroughSona]:checked");
+    try {
+        var recruitedThroughSona = input.val();
+        if(recruitedThroughSona == undefined) throw "not selected";
+        if(recruitedThroughSona == "True")
+            validateNumber($('#SonaNumber'), 0);
+        else
+            $('#SonaNumber').closest(".form-group").removeClass('has-error');
+        input.closest(".form-group").addClass('has-success');
+        input.closest(".form-group").removeClass('has-error');
+    } catch(e) {
+        var input = $("input:radio[name=recruitedThroughSona]:first");
+        input.closest(".form-group").removeClass('has-success');
+        input.closest(".form-group").addClass('has-error');
+    }
+    return $('.form-group.has-error').length;
+}
+
+function submit() {
+    if(validate() == 0) $('form').submit();
+}
+
+$(document).ready(function() {
+    $('input').change(validate);
+});
+
+</script>
+{% endblock %}

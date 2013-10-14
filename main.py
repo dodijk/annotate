@@ -19,10 +19,10 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 # entity group. Queries across the single entity group will be consistent.
 # However, the write rate should be limited to ~1/second.
 
-from models import Content, SubContent, Rating, Agreement
+from models import Content, SubContent, Rating, Agreement, UserDetails
 from sampling import SubContentSampler
 
-class TemplateHandler(webapp2.RequestHandler):
+class UserRequestHandler(webapp2.RequestHandler):
     def is_logged_in(self):
         user = users.get_current_user()
         if not user: return user, {}
@@ -33,7 +33,14 @@ class TemplateHandler(webapp2.RequestHandler):
             "logout_url": users.create_logout_url(self.request.uri),
             "request": self.request,
         }
-    
+
+    def current_user_is_admin_or_redirect(self):
+        user = users.get_current_user()
+        if not user or not users.is_current_user_admin():
+            self.redirect('/')
+        return user
+
+class TemplateHandler(UserRequestHandler):    
     def logged_in_template_response(self, template, template_values={}):
         user, user_values = self.is_logged_in()
         if not user:
@@ -45,12 +52,6 @@ class TemplateHandler(webapp2.RequestHandler):
             except jinja2.exceptions.TemplateNotFound:
                 self.abort(404)
             self.response.write(template.render(template_values))
-
-    def current_user_is_admin_or_redirect(self):
-        user = users.get_current_user()
-        if not user or not users.is_current_user_admin():
-            self.redirect('/')
-        return user
         
     def get(self, template):
         self.logged_in_template_response(template + '.html')
@@ -228,18 +229,41 @@ class MailHandler(webapp2.RequestHandler):
         mail.send_mail(FEEDBACK_MAILADDRESS, FEEDBACK_MAILADDRESS, subject, body)
         self.redirect('/done?mail_sent')
 
+class FormHandler(TemplateHandler):
+    def post(self):
+        user, user_values = self.is_logged_in()
+        if not user:
+            return self.redirect(users.create_login_url(self.request.uri))
+
+        details = UserDetails(user=user, 
+                              age=int(self.request.get('AgeInYears')),
+                              years_of_training=int(self.request.get('NYearsTraining')),
+                              recruited_through_sona= \
+                                self.request.get('recruitedThroughSona') == 'True')
+                                
+        if self.request.get('SonaNumber'):
+            details.sona_number = int(self.request.get('SonaNumber'))
+            
+        details.put()
+
+        self.redirect('/annotate?agree=/form/')
+
+    def get(self):
+        self.logged_in_template_response('form.html')
+
 #
 
 ANNOTATION_NAME = "Fleur-fMRI"
-NUMBER_OF_STARS = 5
 FEEDBACK_MAILADDRESS = "Fleur Bouwer <daan.odijk@gmail.com>"
+NUMBER_OF_STARS = 10
 CONTENT_SAMPLER = SubContentSampler(ANNOTATION_NAME, unrated=True, \
                                     sample_subcontent=True)
 USER_BASED_CONTENT_SAMPLING = True
-ANNOTATION_OBLIGATORY_AGREEMENTS = ['/introduction', '/instruction', '/examples', '/start']
+ANNOTATION_OBLIGATORY_AGREEMENTS = ['/introduction', '/form/', '/instruction', '/examples', '/start']
 RENDER_SUBCONTENT = not CONTENT_SAMPLER.sample_subcontent
 ANNOTATION_BREAK_AFTER = 5 # Number of annotations after which to force a break
 ANNOTATION_BREAK_TIMEOUT = 300 # Number of seconds to remember a users streak
+
 #
 
 app = webapp2.WSGIApplication([
@@ -248,6 +272,7 @@ app = webapp2.WSGIApplication([
     ('/leaderboard', LeaderboardHandler),
     ('/admin', AdminHandler),
     ('/mail', MailHandler),
+    ('/form/', FormHandler),
     # Will match /anything if there is an anything.html 
     # (also /anything/ and /anything.html) and will show
     # the corresponding template anything.html
