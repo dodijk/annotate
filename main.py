@@ -23,46 +23,49 @@ from models import Content, SubContent, Rating, Agreement, UserDetails
 from sampling import SubContentSampler
 
 class UserRequestHandler(webapp2.RequestHandler):
-    def is_logged_in(self):
-        user = users.get_current_user()
-        if not user: return user, {}
-    
-        return user, {
-            "user": user.nickname(),
-            "is_admin": users.is_current_user_admin(),
-            "logout_url": users.create_logout_url(self.request.uri),
-            "request": self.request,
-        }
+    def get_current_user(self,
+                         redirect=False,
+                         admin=False,
+                         redirect_url=None):
 
-    def current_user_is_admin_or_redirect(self):
         user = users.get_current_user()
-        if not user or not users.is_current_user_admin():
-            self.redirect('/')
-        return user
+        user_details = {}
+        if user:
+            user_details = {
+                "user": user.nickname(),
+                "is_admin": users.is_current_user_admin(),
+                "logout_url": users.create_logout_url(self.request.uri),
+                "request": self.request,
+            }
+
+        if redirect and (not user or (admin and not user_details['is_admin'])):
+            if not redirect_url: 
+                redirect_url = users.create_login_url(self.request.uri)
+            self.redirect(redirect_url)
+            user, user_details = None, {}
+
+        return user, user_details
 
 class TemplateHandler(UserRequestHandler):    
-    def logged_in_template_response(self, template, template_values={}):
-        user, user_values = self.is_logged_in()
-        if not user:
-            self.redirect(users.create_login_url(self.request.uri))
-        else:
-            template_values.update(user_values)
-            try:
-                template = JINJA_ENVIRONMENT.get_template(template)
-            except jinja2.exceptions.TemplateNotFound:
-                self.abort(404)
-            self.response.write(template.render(template_values))
+    def template_response(self, template, template_values={}, force_login=True):
+        user, user_values = self.get_current_user(redirect=force_login)
+        if not user: return
+            
+        template_values.update(user_values)
+        try:
+            template = JINJA_ENVIRONMENT.get_template(template)
+        except jinja2.exceptions.TemplateNotFound:
+            self.abort(404)
+        self.response.write(template.render(template_values))
         
     def get(self, template):
-        self.logged_in_template_response(template + '.html')
+        self.template_response(template + '.html')
 
 
 class AnnotateHandler(TemplateHandler):
     def check_agreements(self):
-        user, user_values = self.is_logged_in()
-        if not user:
-            self.redirect(users.create_login_url(self.request.uri))
-            return False
+        user, user_values = self.get_current_user(redirect=True)
+        if not user: return False
             
         agreed = memcache.get("agreed:" + user.user_id())
         if agreed and agreed >= set(ANNOTATION_OBLIGATORY_AGREEMENTS):
@@ -95,9 +98,8 @@ class AnnotateHandler(TemplateHandler):
         return annotation_streak
 
     def get(self):
-        user, user_values = self.is_logged_in()
-        if not user:
-            return self.redirect(users.create_login_url(self.request.uri))
+        user, user_values = self.get_current_user(redirect=True)
+        if not user: return
 
         if not self.check_agreements(): return
         annotation_streak = self.get_statistics(user)
@@ -117,14 +119,13 @@ class AnnotateHandler(TemplateHandler):
             if RENDER_SUBCONTENT:
                 query = SubContent.query(ancestor=values["content"].key)
                 values["subcontents"] = query.fetch()
-            self.logged_in_template_response('annotate.html', values)
+            self.template_response('annotate.html', values)
         else:
             self.redirect('/done')
         
     def post(self):
-        user, user_values = self.is_logged_in()
-        if not user:
-            return self.redirect(users.create_login_url(self.request.uri))
+        user, user_values = self.get_current_user(redirect=True)
+        if not user: return False
         
         for rating, content_id in zip(self.request.POST.getall('stars'), \
                                       self.request.POST.getall('content_id')):
@@ -145,11 +146,12 @@ class LeaderboardHandler(TemplateHandler):
             counts[rating.user] += 1
 
         values = {"counts": sorted(counts.iteritems(), key=lambda x: x[1], reverse=True)}
-        self.logged_in_template_response('leaderboard.html', values)
+        self.template_response('leaderboard.html', values)
 
 class AdminHandler(TemplateHandler):
     def get(self):
-        if not self.current_user_is_admin_or_redirect(): return
+        if not self.get_current_user(True, True, '/'): return
+
         query = Rating.query(ancestor=ndb.Key('Rating', ANNOTATION_NAME))
         counts = defaultdict(int)
         for rating in query.fetch(projection=['content']):
@@ -167,7 +169,7 @@ class AdminHandler(TemplateHandler):
             "subcontents": subcontents,
         }
         
-        self.logged_in_template_response('admin.html', template_values)
+        self.template_response('admin.html', template_values)
 
     def add_content(self, author, content, parent=None):
         if type(content) != str: content = str(content)
@@ -180,8 +182,7 @@ class AdminHandler(TemplateHandler):
         return content.put()
     
     def post(self):
-        user = self.current_user_is_admin_or_redirect()
-        if not user: return
+        if not self.get_current_user(True, True, '/'): return
         if self.request.get('isYAML') == 'on':
             data = yaml.load(self.request.get('content'))
             if not data: raise ValueError("No YAML data")
@@ -231,15 +232,14 @@ class MailHandler(webapp2.RequestHandler):
 
 class FormHandler(TemplateHandler):
     def post(self):
-        user, user_values = self.is_logged_in()
-        if not user:
-            return self.redirect(users.create_login_url(self.request.uri))
+        if not self.get_current_user(redirect=True): return
 
         details = UserDetails(user=user, 
                               age=int(self.request.get('AgeInYears')),
                               years_of_training=int(self.request.get('NYearsTraining')),
                               recruited_through_sona= \
-                                self.request.get('recruitedThroughSona') == 'True')
+                                self.request.get('recruitedThroughSona') == 'True',
+                              parent=ndb.Key('UserDetails', ANNOTATION_NAME))
                                 
         if self.request.get('SonaNumber'):
             details.sona_number = int(self.request.get('SonaNumber'))
@@ -249,7 +249,7 @@ class FormHandler(TemplateHandler):
         self.redirect('/annotate?agree=/form/')
 
     def get(self):
-        self.logged_in_template_response('form.html')
+        self.template_response('form.html')
 
 #
 
