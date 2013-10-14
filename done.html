@@ -2,6 +2,18 @@
 {% extends "template.html" %}
 {% block container %}
       <h1>You're all done!</h1>
+
+{% if 'mail_sent' in request.arguments() %}
+<div class="alert alert-success">Your message has been sent.</div>
+{% endif %}
+    
+    <form action="/mail" method="post">
+    If you have any comments, ran into bugs, or have something else you'd like to share with us, please leave your thoughts below:
+    <br><br>
+    <textarea class="form-control" rows="10" name="message"></textarea>
+    <br>
+    <button type="submit" class="btn btn-default">Submit</button>
+    </form><br><br><br>
       <p class="lead">Thank you very much for participating in our experiment!</p>
       
       

@@ -9,7 +9,7 @@ import webapp2
 import yaml
 
 from google.appengine.ext import ndb
-from google.appengine.api import users, memcache
+from google.appengine.api import users, memcache, mail
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -31,6 +31,7 @@ class TemplateHandler(webapp2.RequestHandler):
             "user": user.nickname(),
             "is_admin": users.is_current_user_admin(),
             "logout_url": users.create_logout_url(self.request.uri),
+            "request": self.request,
         }
     
     def logged_in_template_response(self, template, template_values={}):
@@ -217,10 +218,21 @@ class AdminHandler(TemplateHandler):
         memcache.flush_all()
         self.redirect('/admin')
 
+class MailHandler(webapp2.RequestHandler):
+    def post(self):
+        subject = "Feedback from %s app" % ANNOTATION_NAME 
+        body = ""
+        for argument in self.request.arguments():
+            body += "%s: %s\n" % (argument, self.request.get(argument))
+
+        mail.send_mail(FEEDBACK_MAILADDRESS, FEEDBACK_MAILADDRESS, subject, body)
+        self.redirect('/done?mail_sent')
+
 #
 
 ANNOTATION_NAME = "Fleur-fMRI"
 NUMBER_OF_STARS = 5
+FEEDBACK_MAILADDRESS = "Fleur Bouwer <daan.odijk@gmail.com>"
 CONTENT_SAMPLER = SubContentSampler(ANNOTATION_NAME, unrated=True, \
                                     sample_subcontent=True)
 USER_BASED_CONTENT_SAMPLING = True
@@ -235,6 +247,7 @@ app = webapp2.WSGIApplication([
     ('/annotate', AnnotateHandler),
     ('/leaderboard', LeaderboardHandler),
     ('/admin', AdminHandler),
+    ('/mail', MailHandler),
     # Will match /anything if there is an anything.html 
     # (also /anything/ and /anything.html) and will show
     # the corresponding template anything.html
