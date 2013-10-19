@@ -150,26 +150,64 @@ class LeaderboardHandler(TemplateHandler):
 
 class AdminHandler(TemplateHandler):
     def get(self):
-        if not self.get_current_user(True, True, '/'): return
+        user, user_details = self.get_current_user(True, True)
+        if not user: return
+        
+        if "dump" in self.request.arguments():
+            contents, subcontents, ratings, _counts = \
+                self.get_contents(get_ratings=True, get_ratings_count=False)
+            
+            output = {"content": []}
+            for content in contents:
+                output['content'].append(content.to_dict())
+                if content.key.urlsafe() in ratings:
+                    output['content'][-1]['ratings'] = \
+                        [rating.to_dict() for rating in ratings[content.key.urlsafe()]]
+                if content.key.urlsafe() in subcontents:
+                    output['content'][-1]['subcontents'] = []
+                    for subcontent in subcontents[content.key.urlsafe()]:
+                        output['content'][-1]['subcontents'].append(subcontent.to_dict())
+                    if subcontent.key.urlsafe() in ratings:
+                        output['content'][-1]['subcontents'][-1]['ratings'] = \
+                            [rating.to_dict() for rating in ratings[subcontent.key.urlsafe()]]
+            
+            self.response.headers.add_header("Content-type", "text/x-yaml")
+            self.response.write(yaml.dump(output))
+        else:
+            contents, subcontents, _ratings, counts = self.get_contents()
 
-        query = Rating.query(ancestor=ndb.Key('Rating', ANNOTATION_NAME))
-        counts = defaultdict(int)
-        for rating in query.fetch(projection=['content']):
-            counts[rating.content.urlsafe()] += 1
+            template_values = {
+                "contents": contents,
+                "counts": counts,
+                "subcontents": subcontents,
+            }
+            
+            self.template_response('admin.html', template_values)
+
+    def get_contents(self, get_subcontents=True, get_ratings=False, get_ratings_count=True):
+        contents = Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME)) \
+                          .order(Content.date).fetch()
 
         subcontents = defaultdict(list)
-        query = SubContent.query(ancestor=ndb.Key('Content', ANNOTATION_NAME))
-        for subcontent in query.fetch():
-            subcontents[subcontent.key.parent().urlsafe()] += subcontent,
+        if get_subcontents:
+            query = SubContent.query(ancestor=ndb.Key('Content', ANNOTATION_NAME))
+            for subcontent in query.fetch():
+                subcontents[subcontent.key.parent().urlsafe()] += subcontent,
+                
+        ratings = defaultdict(list)
+        ratings_counts = defaultdict(int)
+        if get_ratings or get_ratings_count:
+            query = Rating.query(ancestor=ndb.Key('Rating', ANNOTATION_NAME))
         
-        template_values = {
-            "contents": Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME)) \
-                                  .order(Content.date).fetch(),
-            "counts": counts,
-            "subcontents": subcontents,
-        }
-        
-        self.template_response('admin.html', template_values)
+            if get_ratings:
+                for rating in query.fetch():
+                    ratings[rating.content.urlsafe()].append(rating)            
+
+            if get_ratings_count:
+                for rating in query.fetch(projection=['content']):
+                    ratings_counts[rating.content.urlsafe()] += 1
+
+        return contents, subcontents, ratings, ratings_counts
 
     def add_content(self, author, content, parent=None):
         if type(content) != str: content = str(content)
@@ -182,7 +220,8 @@ class AdminHandler(TemplateHandler):
         return content.put()
     
     def post(self):
-        if not self.get_current_user(True, True, '/'): return
+        user, user_details = self.get_current_user(True, True, '/')
+        if not user: return
         if self.request.get('isYAML') == 'on':
             data = yaml.load(self.request.get('content'))
             if not data: raise ValueError("No YAML data")
