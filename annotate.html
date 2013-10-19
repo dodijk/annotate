@@ -1,12 +1,18 @@
 {% set title = "Annotate" %}
 {% extends "template.html" %}
-{% macro rating(content, show_content=True) -%}
+{% macro rating(content, show_content=True, labels=None) -%}
 <div class="rating unrated">
   {% if show_content %}{{ content.content }}{% endif %}
   <input type="hidden" name="content_id" value="{{ content.key.urlsafe() }}" />
     {% for star in range(NUMBER_OF_STARS) %}
         <span class="star"></span>
     {% endfor %}
+  {% if labels %}
+  <div class="labels">
+    <label class="pull-left">{{ labels[1] }}</label>
+    <label class="pull-right">{{ labels[0] }}</label>
+  </div>
+  {% endif %}
 </div>
 {%- endmacro %}
 {% block container %}
@@ -26,7 +32,7 @@
             <div>{{ content.content }}</div>
             
             {% if not subcontents %}
-                {{ rating(content, show_content=False) }}
+                {{ rating(content, show_content=False, labels=('easy', 'hard')) }}
             {% endif %}            
             {% for subcontent in subcontents %}
                 {{ rating(subcontent) }}
