@@ -7,6 +7,9 @@ from collections import defaultdict
 import jinja2
 import webapp2
 import yaml
+import uuid
+
+from webapp2_extras import sessions
 
 from google.appengine.ext import ndb
 from google.appengine.api import users, memcache, mail
@@ -28,23 +31,56 @@ class UserRequestHandler(webapp2.RequestHandler):
                          admin=False,
                          redirect_url=None):
 
-        user = users.get_current_user()
-        user_details = {}
-        if user:
+        if FORCE_LOGIN or admin:
+            user = users.get_current_user()
+            user_details = {}
+            if user:
+                user_details = {
+                    "user": user.nickname(),
+                    "is_admin": users.is_current_user_admin(),
+                    "logout_url": users.create_logout_url(self.request.uri),
+                    "request": self.request,
+                }
+    
+            if redirect and (not user or (admin and not user_details['is_admin'])):
+                if not redirect_url: 
+                    redirect_url = users.create_login_url(self.request.uri)
+                self.redirect(redirect_url)
+                user, user_details = None, {}
+        else:
+            if not 'uuid' in self.session: 
+                self.session['uuid'] = str(uuid.uuid4())
+            user = users.User("%s@session.%s" % (self.session['uuid'], 
+                                                 self.request.host.split(':')[0]))
             user_details = {
-                "user": user.nickname(),
-                "is_admin": users.is_current_user_admin(),
-                "logout_url": users.create_logout_url(self.request.uri),
+                "user": self.session['uuid'],
+                "is_admin": False,
+                "logout_url": '/',
                 "request": self.request,
             }
 
-        if redirect and (not user or (admin and not user_details['is_admin'])):
-            if not redirect_url: 
-                redirect_url = users.create_login_url(self.request.uri)
-            self.redirect(redirect_url)
-            user, user_details = None, {}
-
         return user, user_details
+
+    def dispatch(self):
+        if FORCE_LOGIN:
+            webapp2.RequestHandler.dispatch(self)
+        else:
+            # Get a session store for this request.
+            self.session_store = sessions.get_store(request=self.request)
+    
+            try:
+                # Dispatch the request.
+                webapp2.RequestHandler.dispatch(self)
+            finally:
+                # Save all sessions.
+                self.session_store.save_sessions(self.response)
+
+    @webapp2.cached_property
+    def session(self):
+        if FORCE_LOGIN: return None
+
+        # Returns a session using the default cookie key.
+        return self.session_store.get_session()
 
 class TemplateHandler(UserRequestHandler):    
     def template_response(self, template, template_values={}, force_login=True):
@@ -295,6 +331,8 @@ class FormHandler(TemplateHandler):
 
 ANNOTATION_NAME = "Fleur-fMRI"
 FEEDBACK_MAILADDRESS = "Fleur Bouwer <fleurbouwer@hotmail.com>"
+FORCE_LOGIN = False
+
 NUMBER_OF_STARS = 10
 CONTENT_SAMPLER = SubContentSampler(ANNOTATION_NAME, unrated=True, \
                                     sample_subcontent=True)
@@ -317,4 +355,4 @@ app = webapp2.WSGIApplication([
     # (also /anything/ and /anything.html) and will show
     # the corresponding template anything.html
     (r'^/(.*?)(?:\.html)?/?$', TemplateHandler), 
-], debug=True)
+], debug=True, config={'webapp2_extras.sessions': {'secret_key': ANNOTATION_NAME}})
