@@ -67,7 +67,7 @@ class AnnotateHandler(TemplateHandler):
         user, user_values = self.get_current_user(redirect=True)
         if not user: return False
             
-        agreed = memcache.get("agreed:" + user.user_id())
+        agreed = memcache.get("agreed:" + user.email())
         if agreed and agreed >= set(ANNOTATION_OBLIGATORY_AGREEMENTS):
             return True
 
@@ -82,19 +82,19 @@ class AnnotateHandler(TemplateHandler):
                 self.redirect(agreement)
                 return False
         
-        memcache.add("agreed:" + user.user_id(), set(ANNOTATION_OBLIGATORY_AGREEMENTS))
+        memcache.add("agreed:" + user.email(), set(ANNOTATION_OBLIGATORY_AGREEMENTS))
         return True
         
     def get_statistics(self, user):
-        annotation_streak = memcache.get("annotation_streak:" + user.user_id())
+        annotation_streak = memcache.get("annotation_streak:" + user.email())
         if not annotation_streak: annotation_streak = 0
         if annotation_streak == 0 or annotation_streak >= ANNOTATION_BREAK_AFTER:
-            memcache.set("annotation_streak:" + user.user_id(), 0, \
+            memcache.set("annotation_streak:" + user.email(), 0, \
                          ANNOTATION_BREAK_TIMEOUT)
             if annotation_streak >= ANNOTATION_BREAK_AFTER:
                 self.redirect("/break")
                 return None
-        memcache.incr("annotation_streak:" + user.user_id())        
+        memcache.incr("annotation_streak:" + user.email())        
         return annotation_streak
 
     def get(self):
@@ -271,7 +271,8 @@ class MailHandler(webapp2.RequestHandler):
 
 class FormHandler(TemplateHandler):
     def post(self):
-        if not self.get_current_user(redirect=True): return
+        user, user_details = self.get_current_user(redirect=True)
+        if not user: return
 
         details = UserDetails(user=user, 
                               age=int(self.request.get('AgeInYears')),
@@ -293,15 +294,15 @@ class FormHandler(TemplateHandler):
 #
 
 ANNOTATION_NAME = "Fleur-fMRI"
-FEEDBACK_MAILADDRESS = "Fleur Bouwer <daan.odijk@gmail.com>"
+FEEDBACK_MAILADDRESS = "Fleur Bouwer <fleurbouwer@hotmail.com>"
 NUMBER_OF_STARS = 10
 CONTENT_SAMPLER = SubContentSampler(ANNOTATION_NAME, unrated=True, \
                                     sample_subcontent=True)
 USER_BASED_CONTENT_SAMPLING = True
 ANNOTATION_OBLIGATORY_AGREEMENTS = ['/introduction', '/form/', '/instruction', '/examples', '/start']
 RENDER_SUBCONTENT = not CONTENT_SAMPLER.sample_subcontent
-ANNOTATION_BREAK_AFTER = 5 # Number of annotations after which to force a break
-ANNOTATION_BREAK_TIMEOUT = 300 # Number of seconds to remember a users streak
+ANNOTATION_BREAK_AFTER = 30 # Number of annotations after which to force a break
+ANNOTATION_BREAK_TIMEOUT = 1800 # Number of seconds to remember a users streak
 
 #
 
