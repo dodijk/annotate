@@ -2,6 +2,7 @@ import random
 
 from models import Content, SubContent, Rating
 from google.appengine.ext import ndb
+from google.appengine.api import memcache
 
 def query_content(ANNOTATION_NAME):
     query = Content.query(ancestor=ndb.Key('Content', ANNOTATION_NAME))
@@ -40,7 +41,8 @@ class SubContentSampler(ContentSampler):
     def __call__(self, user=None):
         query = Content.query(ancestor=ndb.Key('Content', self.ancestor))
         count = query.count()
-        choices = range(count)
+        invalid_choices = memcache.get("invalid_content:" + user.email()) or []
+        choices = filter(lambda choice: choice not in invalid_choices, range(count))
         while count > 0 and len(choices):
             choice = random.choice(choices)
             content = query.fetch(offset=choice, limit=1)[0]
@@ -64,8 +66,10 @@ class SubContentSampler(ContentSampler):
                 invalid |= len(subcontent_keys) > 0 and ratings == len(subcontent_keys)
                 if invalid:
                     choices.remove(choice)
+                    invalid_choices.append(choice)
+                    memcache.set("invalid_content:" + user.email(), invalid_choices)
                     continue
-
+            
             if len(subcontent_keys) and self.sample_subcontent:
                 content = random.choice(subcontent_keys).get()
 
