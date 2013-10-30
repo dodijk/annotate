@@ -47,7 +47,7 @@
 $( document ).ready(function() {
     // Handle clicks on stars
     $("form .rating span.star").click(function() {
-        var stars = {{ NUMBER_OF_STARS }}-$(this).index();
+        var stars = {{ NUMBER_OF_STARS }}-$(this).index()+1;
         var rating = $(this).closest(".rating");
         rate(rating, stars);
     });
