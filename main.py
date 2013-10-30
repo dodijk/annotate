@@ -193,7 +193,7 @@ class AdminHandler(TemplateHandler):
         if "dump" in self.request.arguments():
             contents, subcontents, ratings, _counts = \
                 self.get_contents(get_ratings=True, get_ratings_count=False)
-            
+                
             output = {"content": []}
             for content in contents:
                 output['content'].append(content.to_dict())
@@ -207,6 +207,10 @@ class AdminHandler(TemplateHandler):
                         if subcontent.key.urlsafe() in ratings:
                             output['content'][-1]['subcontents'][-1]['ratings'] = \
                                 [rating.to_dict() for rating in ratings[subcontent.key.urlsafe()]]
+            users = UserDetails.query(ancestor=\
+                            ndb.Key('UserDetails', ANNOTATION_NAME)).fetch()
+            output["users"] = map(lambda user_detail: user_detail.to_dict(), users)
+                
             self.response.headers.add_header("Content-type", "text/x-yaml")
             self.response.write(yaml.dump(output))
         else:
