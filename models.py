@@ -28,6 +28,6 @@ class UserDetails(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
     age = ndb.IntegerProperty()
     years_of_training = ndb.IntegerProperty()
-    recruited_through_sona = ndb.BooleanProperty()
-    sona_number = ndb.IntegerProperty()
+#     recruited_through_sona = ndb.BooleanProperty()
+#     sona_number = ndb.IntegerProperty()
 

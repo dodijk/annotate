@@ -313,12 +313,12 @@ class FormHandler(TemplateHandler):
         details = UserDetails(user=user, 
                               age=int(self.request.get('AgeInYears')),
                               years_of_training=int(self.request.get('NYearsTraining')),
-                              recruited_through_sona= \
-                                self.request.get('recruitedThroughSona') == 'True',
+#                               recruited_through_sona= \
+#                                 self.request.get('recruitedThroughSona') == 'True',
                               parent=ndb.Key('UserDetails', ANNOTATION_NAME))
                                 
-        if self.request.get('SonaNumber'):
-            details.sona_number = int(self.request.get('SonaNumber'))
+#         if self.request.get('SonaNumber'):
+#             details.sona_number = int(self.request.get('SonaNumber'))
             
         details.put()
 
