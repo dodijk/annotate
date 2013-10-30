@@ -9,8 +9,8 @@
     {% endfor %}
   {% if labels %}
   <div class="labels">
-    <label class="pull-left">{{ labels[1] }}</label>
-    <label class="pull-right">{{ labels[0] }}</label>
+    <label class="pull-left">{{ labels[0] }}</label>
+    <label class="pull-right">{{ labels[1] }}</label>
   </div>
   {% endif %}
 </div>
@@ -24,7 +24,7 @@
       </div>
 
       <h1>Annotate</h1>
-      <p class="lead">Listen carefully to this rhythm. How easy do you think it would be to tap along with the beat in this rhythm?</p>
+      <p class="lead">Listen carefully to this rhythm. How hard do you think it would be to tap along with the beat in this rhythm?</p>
         
       <div class="row">
         <form method="post">
@@ -32,7 +32,7 @@
             <div>{{ content.content }}</div>
             
             {% if not subcontents %}
-                {{ rating(content, show_content=False, labels=('easy', 'hard')) }}
+                {{ rating(content, show_content=False, labels=('very easy', 'very hard')) }}
             {% endif %}            
             {% for subcontent in subcontents %}
                 {{ rating(subcontent) }}
