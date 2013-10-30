@@ -124,13 +124,13 @@ class AnnotateHandler(TemplateHandler):
         
     def get_statistics(self, user):
         annotation_streak = memcache.get("annotation_streak:" + user.email())
-        if not annotation_streak: annotation_streak = 0
-        if annotation_streak == 0 or annotation_streak >= ANNOTATION_BREAK_AFTER:
-            memcache.set("annotation_streak:" + user.email(), 0, \
-                         ANNOTATION_BREAK_TIMEOUT)
-            if annotation_streak >= ANNOTATION_BREAK_AFTER:
-                self.redirect("/break")
-                return None
+        if not annotation_streak: 
+            annotation_streak = 0
+            memcache.set("annotation_streak:" + user.email(), 0)
+        if annotation_streak >= ANNOTATION_BREAK_AFTER:
+            memcache.delete("annotation_streak:" + user.email())
+            self.redirect("/break")
+            return None
         memcache.incr("annotation_streak:" + user.email())        
         return annotation_streak
 
@@ -344,7 +344,6 @@ USER_BASED_CONTENT_SAMPLING = True
 ANNOTATION_OBLIGATORY_AGREEMENTS = ['/introduction', '/form/', '/instruction', '/examples', '/start']
 RENDER_SUBCONTENT = not CONTENT_SAMPLER.sample_subcontent
 ANNOTATION_BREAK_AFTER = 30 # Number of annotations after which to force a break
-ANNOTATION_BREAK_TIMEOUT = 1800 # Number of seconds to remember a users streak
 
 #
 
