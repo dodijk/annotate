@@ -1,10 +1,10 @@
 /* CSS crunched with Crunch - http://crunchapp.net/ */
-body{padding-top:50px;}
-@media (min-width:768px){.container{max-width:768px;}}.rating{unicode-bidi:bidi-override;direction:rtl;font-size:30px;}.rating span.star{font-family:FontAwesome;font-weight:normal;font-style:normal;display:inline-block;}.rating span.star:hover{cursor:pointer;}
-.rating span.star:before{content:"\f006";padding-right:5px;color:#999999;}
-.rating span.star:hover:before,.rating span.star:hover~span.star:before{content:"\f005";color:#e3cf7a;}
-.rating .labels{line-height:0;}
-.rating label{visibility:hidden;color:#999999;font-size:12pt;font-weight:normal;direction:ltr;margin:0 15px 0 15px;}
-.rating:hover label{visibility:visible;}
-.annotation_progress{float:right;width:150px;margin:20px 14px 0;}.annotation_progress:hover a{display:inherit;}
-.annotation_progress a{display:none;color:#aaa;float:right;text-decoration:none;margin:0 3px 0;}.annotation_progress a:hover{text-decoration:underline;}
+body{padding-top:50px}
+@media (min-width:768px){.container{max-width:768px}}.rating{unicode-bidi:bidi-override;direction:rtl;font-size:30px}.rating span.star{font-family:FontAwesome;font-weight:normal;font-style:normal;display:inline-block}.rating span.star:hover{cursor:pointer}
+.rating span.star:before{content:"\f006";padding-right:5px;color:#999999}
+.rating span.star:hover:before,.rating span.star:hover~span.star:before{content:"\f005";color:#e3cf7a}
+.rating .labels{line-height:0}
+.rating label{visibility:hidden;color:#999999;font-size:12pt;font-weight:normal;direction:ltr;margin:0 15px 0 15px}
+.rating:hover label{visibility:visible}
+@media (max-width:480px){.rating{margin:0 -5px}.rating span.star{margin:-5px;font-size:24px} .rating label{visibility:inherit}}.annotation_progress{float:right;width:150px;margin:20px 14px 0}.annotation_progress:hover a{display:inherit}
+.annotation_progress a{display:none;color:#aaa;float:right;text-decoration:none;margin:0 3px 0}.annotation_progress a:hover{text-decoration:underline}

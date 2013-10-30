@@ -71,6 +71,14 @@ $( document ).ready(function() {
         var stars = event.charCode-48;
         rate($("form .unrated:first"), stars);
     });
+    
+    // iPhone & iPad don't do autoplay, so add controls
+    if ((navigator.platform.indexOf("iPhone") != -1) || 
+        (navigator.platform.indexOf("iPad") != -1) ||
+        (navigator.platform.indexOf("iPod") != -1)) {
+        $("audio").attr("controls", "true");
+        $(".labels label").css("visibility", "inherit");
+    }
 });
 </script>
 
