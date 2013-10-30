@@ -204,10 +204,9 @@ class AdminHandler(TemplateHandler):
                     output['content'][-1]['subcontents'] = []
                     for subcontent in subcontents[content.key.urlsafe()]:
                         output['content'][-1]['subcontents'].append(subcontent.to_dict())
-                    if subcontent.key.urlsafe() in ratings:
-                        output['content'][-1]['subcontents'][-1]['ratings'] = \
-                            [rating.to_dict() for rating in ratings[subcontent.key.urlsafe()]]
-            
+                        if subcontent.key.urlsafe() in ratings:
+                            output['content'][-1]['subcontents'][-1]['ratings'] = \
+                                [rating.to_dict() for rating in ratings[subcontent.key.urlsafe()]]
             self.response.headers.add_header("Content-type", "text/x-yaml")
             self.response.write(yaml.dump(output))
         else:
