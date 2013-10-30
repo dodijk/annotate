@@ -111,9 +111,10 @@ class AnnotateHandler(TemplateHandler):
         if agree:
             Agreement(user=user, url=agree,
                       parent=ndb.Key('Agreement', ANNOTATION_NAME)).put()
+
         for agreement in ANNOTATION_OBLIGATORY_AGREEMENTS:
-            if not Agreement.query(Agreement.user==user and \
-                                   Agreement.url == agreement, 
+            if not Agreement.query(ndb.AND(Agreement.user== user, \
+                                           Agreement.url == agreement), 
                         ancestor=ndb.Key('Agreement', ANNOTATION_NAME)).count():
                 self.redirect(agreement)
                 return False
